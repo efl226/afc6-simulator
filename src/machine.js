@@ -3,11 +3,11 @@
 // machine. Times are DEMO-SHORTENED (seconds) so a full cook runs in ~30s.
 
 export const DUAL = new Set([
-  'bake', 'roast', 'wings', 'recrisp', 'toast', 'veggies', 'frozen snacks', 'fries', 'max crisp',
+  'air fry', 'bake', 'roast', 'wings', 'recrisp', 'toast', 'veggies', 'frozen snacks', 'fries', 'max crisp',
 ]);
 
 export const PRESETS = {
-  bake: { t: 45, T: 350 }, roast: { t: 40, T: 380 }, broil: { t: 25, T: 450 },
+  'air fry': { t: 25, T: 400 }, bake: { t: 45, T: 350 }, roast: { t: 40, T: 380 }, broil: { t: 25, T: 450 },
   wings: { t: 36, T: 400 }, recrisp: { t: 20, T: 375 }, toast: { t: 14, T: 400 },
   veggies: { t: 24, T: 375 }, 'frozen snacks': { t: 26, T: 400 }, fries: { t: 30, T: 400 },
   'max crisp': { t: 24, T: 450 }, 'keep warm': { t: 60, T: 165 },
@@ -18,14 +18,14 @@ export const COOK = ['running', 'paused', 'basketOut', 'shakeAlert', 'shakeWaiti
 
 export const initCtx = {
   fn: null, dual: false, time: 0, temp: 350, rem: 0, total: 0,
-  shake: false, shaken: false, light: false, vol: true, basket: true, last: null, fav: null,
+  shake: false, shaken: false, light: 2, vol: true, basket: true, last: null, fav: null,
 };
 
 const clamp = (t) => Math.min(450, Math.max(120, t));
 
 export const fmt = (s) => {
   s = Math.max(0, Math.round(s));
-  return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
 };
 
 export const PRETTY = {
@@ -38,7 +38,7 @@ export function transition(S, C0, ev, arg) {
   let C = { ...C0 }, msg = '';
 
   // ---- global events (valid in most states) ----
-  if (ev === 'LIGHT_TOGGLE') { C.light = !C.light; return { S, C, msg }; }
+  if (ev === 'LIGHT_TOGGLE') { C.light = (C.light + 1) % 3; return { S, C, msg }; }
   if (ev === 'VOLUME_TOGGLE') { C.vol = !C.vol; return { S, C, msg }; }
   if (ev === 'POWER_OFF') { return { S: 'off', C, msg }; }
   if ((ev === 'BASKET_REMOVED' || ev === 'BASKET_INSERTED') && !COOK.includes(S)) {
@@ -84,8 +84,8 @@ export function transition(S, C0, ev, arg) {
         if (C.rem <= 0) S = 'done';
         else if (C.shake && !C.shaken && C.rem <= Math.ceil(C.total / 2)) { C.shaken = true; S = 'shakeAlert'; }
       }
-      else if (ev === 'PAUSE' || ev === 'START') S = 'paused';
-      else if (ev === 'STOP') S = 'set';
+      else if (ev === 'PAUSE') S = 'paused';
+      else if (ev === 'START' || ev === 'STOP') S = 'idle';
       else if (ev === 'ADJUST_TIME') { C.rem = Math.max(0, C.rem + arg); C.fn = null; }
       else if (ev === 'ADJUST_TEMP') { C.temp = clamp(C.temp + arg); C.fn = null; }
       else if (ev === 'ADD_30') C.rem += 30;
@@ -99,7 +99,7 @@ export function transition(S, C0, ev, arg) {
       break;
     case 'paused':
       if (ev === 'START' || ev === 'PAUSE') S = 'running';
-      else if (ev === 'STOP') S = 'set';
+      else if (ev === 'STOP') S = 'idle';
       else if (ev === 'BASKET_REMOVED') { C.basket = false; S = 'basketOut'; }
       break;
     case 'basketOut':
