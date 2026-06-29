@@ -6,8 +6,8 @@ import dualHeatSvg from '../assets/DualHeat Icon.svg'
 const PRESETS_POS = [
   ['air fry', 'Air Fry', 14, 31], ['bake', 'Bake', 28, 31], ['broil', 'Broil', 42, 31],
   ['roast', 'Roast', 55, 31], ['recrisp', 'Recrisp', 69, 31], ['max crisp', 'Max Crisp', 83, 31],
-  ['toast', 'Toast', 14, 44], ['fries', 'Fries', 31, 44], ['frozen snacks', 'Frozen Snacks', 49, 44],
-  ['wings', 'Wings', 66, 44], ['veggies', 'Veggies', 83, 44],
+  ['toast', 'Toast', 14, 44], ['fries', 'Fries', 31, 44], ['wings', 'Wings', 49, 44],
+  ['frozen snacks', 'Frozen Snacks', 66, 44], ['veggies', 'Veggies', 83, 44],
 ]
 
 const makeHold = (short, long) => {
