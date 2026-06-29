@@ -99,9 +99,9 @@ export default function Panel({ S, C, send }) {
             <span className={'disp' + (cooking ? ' cooking' : '')}>{dispVal}</span>
           </div>
           <div className="stepper" style={{ left: '68%', top: '63%' }}>
-            <div className={'arr' + (!canAdjust ? ' dis' : '')} onClick={() => adjTime(30)}>{Ic.arrow}</div>
+            <div className={'arr' + (!canAdjust ? ' dis' : '')} onClick={() => adjTime(5)}>{Ic.arrow}</div>
             <div className="mid" onClick={() => on && setDispMode('time')}>Time</div>
-            <div className={'arr dn' + (!canAdjust ? ' dis' : '')} onClick={() => adjTime(-30)}>{Ic.arrow}</div>
+            <div className={'arr dn' + (!canAdjust ? ' dis' : '')} onClick={() => adjTime(-5)}>{Ic.arrow}</div>
           </div>
 
           {/* ---- keep warm (right) ---- */}
