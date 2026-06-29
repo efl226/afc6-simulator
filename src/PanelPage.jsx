@@ -71,10 +71,16 @@ export default function PanelPage() {
             </button>
           </div>
           <div className="drawer-body">
+            <p className="dr-desc">Valid actions for the current state. This list updates as the machine transitions.</p>
+            <div className="dr-section-label">STATE-SPECIFIC</div>
             <div className="dr-pills">
               {(AVAIL[st.S] || []).map((e, i) => (
                 <span key={i} className={'dr-pill' + (e.indexOf('⏱') >= 0 ? ' auto' : '')}>{e}</span>
               ))}
+            </div>
+            <div className="dr-divider" />
+            <div className="dr-section-label">ALWAYS AVAILABLE</div>
+            <div className="dr-pills">
               <span className="dr-pill glob">POWER_OFF (hold)</span>
               <span className="dr-pill glob">LIGHT</span>
               <span className="dr-pill glob">VOLUME</span>
@@ -112,6 +118,7 @@ export default function PanelPage() {
             </button>
           </div>
           <div className="drawer-body">
+            <p className="dr-desc">Live readout of every context value in the state machine. Values update in real time as you interact.</p>
             <div className="dr-kv">
               <div className="dr-row">
                 <span className="dr-k">STATE</span>
