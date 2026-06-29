@@ -4,10 +4,10 @@ import { Ic } from '../icons.jsx'
 import dualHeatSvg from '../assets/DualHeat Icon.svg'
 
 const PRESETS_POS = [
-  ['air fry', 'Air Fry', 15, 31], ['bake', 'Bake', 28, 31], ['roast', 'Roast', 41, 31],
-  ['broil', 'Broil', 54, 31], ['wings', 'Wings', 67, 31], ['recrisp', 'Recrisp', 80, 31],
-  ['toast', 'Toast', 15, 44], ['veggies', 'Veggies', 31, 44], ['frozen snacks', 'Frozen Snacks', 48, 44],
-  ['fries', 'Fries', 65, 44], ['max crisp', 'Max Crisp', 82, 44],
+  ['air fry', 'Air Fry', 14, 31], ['bake', 'Bake', 28, 31], ['broil', 'Broil', 42, 31],
+  ['roast', 'Roast', 55, 31], ['recrisp', 'Recrisp', 69, 31], ['max crisp', 'Max Crisp', 83, 31],
+  ['toast', 'Toast', 14, 44], ['fries', 'Fries', 31, 44], ['frozen snacks', 'Frozen Snacks', 49, 44],
+  ['wings', 'Wings', 66, 44], ['veggies', 'Veggies', 83, 44],
 ]
 
 const makeHold = (short, long) => {
@@ -23,9 +23,10 @@ export default function Panel({ S, C, send }) {
   const cooking = COOK.includes(S)
   const on = S !== 'off'
   const pdis = !(on && !cooking)
-  const stepDis = !(on && S !== 'shakeAlert' && S !== 'shakeWaiting' && S !== 'basketOut')
+  const stepDis = !(on && S !== 'running' && S !== 'shakeAlert' && S !== 'shakeWaiting' && S !== 'basketOut')
   const pauseEnabled = S === 'running' || S === 'paused'
   const brightness = [0.5, 0.75, 1][C.light]
+  const presetLit = (fn) => C.fn === fn && on
 
   const [dispMode, setDispMode] = useState('time')
   const prevFn = useRef(C.fn)
@@ -51,8 +52,9 @@ export default function Panel({ S, C, send }) {
     setTimeout(() => setFlash(f => ({ ...f, [key]: false })), 200)
   }
 
-  const adjTemp = (v) => { setDispMode('temp'); send('ADJUST_TEMP', v) }
-  const adjTime = (v) => { setDispMode('time'); send('ADJUST_TIME', v) }
+  const canAdjust = on && (S === 'set' || S === 'idle' || S === 'paused')
+  const adjTemp = (v) => { if (canAdjust) { setDispMode('temp'); send('ADJUST_TEMP', v) } }
+  const adjTime = (v) => { if (canAdjust) { setDispMode('time'); send('ADJUST_TIME', v) } }
 
   return (
     <div className="panelwrap">
@@ -70,53 +72,55 @@ export default function Panel({ S, C, send }) {
           <div className="dual-ind" style={{ left: '50%', top: '14%', opacity: C.dual && on ? 1 : 0 }}>
             <img src={dualHeatSvg} alt="" draggable={false} /></div>
           <div className={'c' + (pdis ? ' dis' : '')} style={{ left: '66%', top: '14%' }}
-            onClick={() => !pdis && send('LAST_COOK')}>{Ic.last}<span className="lab">Last Cook</span></div>
-          <div className={'c' + (pdis ? ' dis' : '')} style={{ left: '80%', top: '14%' }}
             {...makeHold(() => send('FAVORITE'), () => send('SAVE_FAVORITE'))}>{Ic.fav}<span className="lab">Favorite</span></div>
+          <div className={'c' + (pdis ? ' dis' : '')} style={{ left: '80%', top: '14%' }}
+            onClick={() => !pdis && send('LAST_COOK')}>{Ic.last}<span className="lab">Last Cook</span></div>
 
           {/* ---- presets ---- */}
           {PRESETS_POS.map(([fn, label, x, y]) => (
-            <div key={fn} className={'p' + (C.fn === fn && on ? ' sel' : '') + (pdis ? ' dis' : '')}
+            <div key={fn} className={'p' + (presetLit(fn) ? ' sel' : '') + (pdis && !presetLit(fn) ? ' dis' : '')}
               style={{ left: x + '%', top: y + '%' }}
               onClick={() => !pdis && send('SELECT_FUNCTION', fn)}>{label}</div>
           ))}
 
-          {/* ---- keep warm ---- */}
-          <div className={'p med' + (C.fn === 'keep warm' && on ? ' sel' : '') + (pdis ? ' dis' : '')}
+          {/* ---- shake (left) — lights up during shakeAlert ---- */}
+          <div className={'shake-btn' + (C.shake || S === 'shakeAlert' ? ' sel' : '') + (pdis ? ' dis' : '')}
             style={{ left: '14%', top: '63%' }}
-            onClick={() => !pdis && send('SELECT_FUNCTION', 'keep warm')}>Keep Warm</div>
+            onClick={() => !pdis && send('TOGGLE_SHAKE')}>{Ic.shake}</div>
 
           {/* ---- steppers + display ---- */}
-          <div className={'stepper' + (stepDis ? ' dis' : '')} style={{ left: '30%', top: '63%' }}>
-            <div className="arr" onClick={() => !stepDis && adjTemp(5)}>{Ic.arrow}</div>
-            <div className="mid" onClick={() => !stepDis && setDispMode('temp')}>Temp</div>
-            <div className="arr dn" onClick={() => !stepDis && adjTemp(-5)}>{Ic.arrow}</div>
+          <div className="stepper" style={{ left: '30%', top: '63%' }}>
+            <div className={'arr' + (!canAdjust ? ' dis' : '')} onClick={() => adjTemp(5)}>{Ic.arrow}</div>
+            <div className="mid" onClick={() => on && setDispMode('temp')}>Temp</div>
+            <div className={'arr dn' + (!canAdjust ? ' dis' : '')} onClick={() => adjTemp(-5)}>{Ic.arrow}</div>
           </div>
           <div className="disp-wrap" style={{ left: '49.9%', top: '63%' }}>
             <span className="ghost">{ghost}</span>
             <span className={'disp' + (cooking ? ' cooking' : '')}>{dispVal}</span>
           </div>
-          <div className={'stepper' + (stepDis ? ' dis' : '')} style={{ left: '68%', top: '63%' }}>
-            <div className="arr" onClick={() => !stepDis && adjTime(30)}>{Ic.arrow}</div>
-            <div className="mid" onClick={() => !stepDis && setDispMode('time')}>Time</div>
-            <div className="arr dn" onClick={() => !stepDis && adjTime(-30)}>{Ic.arrow}</div>
+          <div className="stepper" style={{ left: '68%', top: '63%' }}>
+            <div className={'arr' + (!canAdjust ? ' dis' : '')} onClick={() => adjTime(30)}>{Ic.arrow}</div>
+            <div className="mid" onClick={() => on && setDispMode('time')}>Time</div>
+            <div className={'arr dn' + (!canAdjust ? ' dis' : '')} onClick={() => adjTime(-30)}>{Ic.arrow}</div>
           </div>
-          <div className={'shake-btn' + (C.shake ? ' sel' : '') + (pdis ? ' dis' : '')}
+
+          {/* ---- keep warm (right) ---- */}
+          <div className={'p' + (presetLit('keep warm') ? ' sel' : '') + (pdis && !presetLit('keep warm') ? ' dis' : '')}
             style={{ left: '83%', top: '63%' }}
-            onClick={() => !pdis && send('TOGGLE_SHAKE')}>{Ic.shake}</div>
+            onClick={() => !pdis && send('SELECT_FUNCTION', 'keep warm')}>Keep Warm</div>
 
           {/* ---- bottom row ---- */}
-          <div className={'c' + (!pauseEnabled ? ' dis' : '')} style={{ left: '32%', top: '87%' }}
-            onClick={() => pauseEnabled && send('PAUSE')}>{Ic.pause}</div>
+          <div className={'c btm' + (!pauseEnabled ? ' dis' : '')} style={{ left: '30%', top: '87%' }}
+            onClick={() => { if (pauseEnabled) { if (S === 'paused') setDispMode('time'); send('PAUSE'); } }}>{Ic.pause}</div>
           <div className={'startstop' + (on ? ' on' : '')} style={{ left: '49.9%', top: '87%' }}
-            onClick={() => send('START')}>
+            onClick={() => { setDispMode('time'); send('START'); }}>
             <div className="t">Start</div><div className="ln" /><div className="t">Stop</div>
           </div>
-          <div className={'c' + (flash.light ? ' flash' : '')} style={{ left: '68%', top: '87%' }}
+          <div className={'c btm' + (flash.light ? ' flash' : '')} style={{ left: '68%', top: '87%' }}
             onClick={() => doFlash('light', () => send('LIGHT_TOGGLE'))}>{Ic.light}</div>
         </div>
       </div>
-      <div className="hint">basket sensor → press <b>B</b> &nbsp;·&nbsp; +30s → press <b>A</b> &nbsp;·&nbsp; hold <b>fav</b>=save</div>
+      <div className="hint">basket → press <b>B</b> to remove, <b>B</b> again to reinsert &nbsp;·&nbsp; hold <b>fav</b>=save</div>
     </div>
   )
 }
