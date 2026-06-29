@@ -149,12 +149,12 @@ export default function PanelPage() {
                 <span className={'dr-v' + (!st.C.basket ? ' warn' : '')}>{st.C.basket ? 'locked' : 'REMOVED'}</span>
               </div>
               <div className="dr-row">
-                <span className="dr-k">BRIGHTNESS</span>
-                <span className="dr-v">{['50%', '75%', '100%'][st.C.light]}</span>
+                <span className="dr-k">LIGHT</span>
+                <span className="dr-v">{st.C.light ? 'ON' : 'off'}</span>
               </div>
               <div className="dr-row">
                 <span className="dr-k">VOLUME</span>
-                <span className="dr-v">{st.C.vol ? 'on' : 'off'}</span>
+                <span className="dr-v">{['LOW', 'MED', 'HIGH'][st.C.vol]}</span>
               </div>
             </div>
           </div>

@@ -94,6 +94,9 @@ main { position: relative; z-index: 2; display: flex; gap: 32px; padding: 14px 3
 .ghost { position: absolute; inset: 0; color: #fff; opacity: .07; }
 .disp { position: relative; color: #fff; filter: drop-shadow(0 0 10px rgba(255, 255, 255, .22)); }
 .disp.cooking { color: #fff; filter: drop-shadow(0 0 12px rgba(240, 137, 46, .30)); }
+.disp.vol-label { font-family: 'NHGDP', sans-serif; font-size: 36px; letter-spacing: 4px; transition: none; }
+.deg { font-family: 'NHGDP', sans-serif; font-size: 24px; color: #fff; vertical-align: top; margin-left: 1px; filter: drop-shadow(0 0 6px rgba(255,255,255,.15)); }
+.c.btm.lit { color: #fff; }
 .stepper { display: flex; flex-direction: column; align-items: center; gap: 22px; color: #fff; }
 .stepper .arr { cursor: pointer; line-height: 0; transition: opacity .15s; }
 .stepper .arr:active { transform: scale(.9); }

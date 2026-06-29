@@ -18,7 +18,7 @@ export const COOK = ['running', 'paused', 'basketOut', 'shakeAlert', 'shakeWaiti
 
 export const initCtx = {
   fn: null, dual: false, time: 0, temp: 0, rem: 0, total: 0,
-  shake: false, shaken: false, light: 2, vol: true, basket: true, last: null, fav: null,
+  shake: false, shaken: false, light: false, vol: 2, basket: true, last: null, fav: null,
 };
 
 const PERSIST = (C) => ({ light: C.light, vol: C.vol, last: C.last, fav: C.fav, basket: C.basket });
@@ -41,8 +41,8 @@ export function transition(S, C0, ev, arg) {
   let C = { ...C0 }, msg = '';
 
   // ---- global events ----
-  if (ev === 'LIGHT_TOGGLE')  { C.light = (C.light + 1) % 3; return { S, C, msg }; }
-  if (ev === 'VOLUME_TOGGLE') { C.vol = !C.vol;              return { S, C, msg }; }
+  if (ev === 'LIGHT_TOGGLE')  { C.light = !C.light;           return { S, C, msg }; }
+  if (ev === 'VOLUME_TOGGLE') { C.vol = (C.vol + 1) % 3;    return { S, C, msg }; }
   if (ev === 'POWER_OFF')     { return { S: 'off', C, msg }; }
 
   if ((ev === 'BASKET_REMOVED' || ev === 'BASKET_INSERTED') && !COOK.includes(S)) {
@@ -99,6 +99,7 @@ export function transition(S, C0, ev, arg) {
       }
       else if (ev === 'PAUSE')                   S = 'paused';
       else if (ev === 'START' || ev === 'STOP')  { C = reset(C); S = 'idle'; }
+      else if (ev === 'TOGGLE_SHAKE')            C.shake = !C.shake;
       else if (ev === 'BASKET_REMOVED')          { C.basket = false; S = 'basketOut'; }
       break;
 

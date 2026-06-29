@@ -44,8 +44,8 @@ export default function Telemetry({ S, C }) {
             <span className={'v' + (!C.basket ? ' warn' : '')}>{C.basket ? 'locked' : 'REMOVED'}</span>
           </div>
           <div className="kv-col">
-            <span className="k">bright / vol</span>
-            <span className="v">{['50%', '75%', '100%'][C.light]} / {C.vol ? 'on' : 'off'}</span>
+            <span className="k">light / vol</span>
+            <span className="v">{C.light ? 'ON' : 'off'} / {['LOW', 'MED', 'HIGH'][C.vol]}</span>
           </div>
         </div>
       </div>

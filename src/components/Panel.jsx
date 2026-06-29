@@ -10,6 +10,8 @@ const PRESETS_POS = [
   ['frozen snacks', 'Frozen Snacks', 66, 44], ['veggies', 'Veggies', 83, 44],
 ]
 
+const VOL_LABELS = ['LOW', 'MED', 'HIGH']
+
 const makeHold = (short, long) => {
   let timer, longFired = false
   return {
@@ -23,20 +25,60 @@ export default function Panel({ S, C, send }) {
   const cooking = COOK.includes(S)
   const on = S !== 'off'
   const pdis = !(on && !cooking)
-  const stepDis = !(on && S !== 'running' && S !== 'shakeAlert' && S !== 'shakeWaiting' && S !== 'basketOut')
   const pauseEnabled = S === 'running' || S === 'paused'
-  const brightness = [0.5, 0.75, 1][C.light]
+  const brightness = 1
   const presetLit = (fn) => C.fn === fn && on
+  const canAdjust = on && (S === 'set' || S === 'idle' || S === 'paused')
 
+  // ---- display mode: time vs temp ----
   const [dispMode, setDispMode] = useState('time')
   const prevFn = useRef(C.fn)
-  useEffect(() => {
-    if (C.fn && C.fn !== prevFn.current) setDispMode('temp')
-    prevFn.current = C.fn
-  }, [C.fn])
+  const altRef = useRef(null)
 
+  useEffect(() => {
+    if (C.fn && C.fn !== prevFn.current && !cooking) {
+      let count = 0
+      setDispMode('temp')
+      clearInterval(altRef.current)
+      altRef.current = setInterval(() => {
+        count++
+        if (count >= 5) { clearInterval(altRef.current); setDispMode('temp'); return }
+        setDispMode(m => m === 'temp' ? 'time' : 'temp')
+      }, 1200)
+    }
+    prevFn.current = C.fn
+  }, [C.fn, cooking])
+
+  useEffect(() => () => clearInterval(altRef.current), [])
+
+  // ---- volume flash on display ----
+  const [volFlash, setVolFlash] = useState(null)
+  const volTimer = useRef(null)
+
+  const handleVolume = () => {
+    const next = (C.vol + 1) % 3
+    send('VOLUME_TOGGLE')
+    setVolFlash(VOL_LABELS[next])
+    clearTimeout(volTimer.current)
+    volTimer.current = setTimeout(() => setVolFlash(null), 1000)
+  }
+
+  useEffect(() => () => clearTimeout(volTimer.current), [])
+
+  // ---- flash for light ----
+  const [flash, setFlash] = useState({})
+  const doFlash = (key, action) => {
+    action()
+    setFlash(f => ({ ...f, [key]: true }))
+    setTimeout(() => setFlash(f => ({ ...f, [key]: false })), 200)
+  }
+
+  // ---- compute display value ----
+  const showDeg = dispMode === 'temp' && !volFlash && on && C.temp > 0
   let dispVal, ghost
-  if (!on) {
+  if (volFlash) {
+    dispVal = volFlash; ghost = ''
+  } else if (!on) {
     dispVal = '--:--'; ghost = '88:88'
   } else if (dispMode === 'temp') {
     dispVal = String(C.temp); ghost = '888'
@@ -45,14 +87,6 @@ export default function Panel({ S, C, send }) {
     ghost = dispVal.replace(/[0-9]/g, '8')
   }
 
-  const [flash, setFlash] = useState({})
-  const doFlash = (key, action) => {
-    action()
-    setFlash(f => ({ ...f, [key]: true }))
-    setTimeout(() => setFlash(f => ({ ...f, [key]: false })), 200)
-  }
-
-  const canAdjust = on && (S === 'set' || S === 'idle' || S === 'paused')
   const adjTemp = (v) => { if (canAdjust) { setDispMode('temp'); send('ADJUST_TEMP', v) } }
   const adjTime = (v) => { if (canAdjust) { setDispMode('time'); send('ADJUST_TIME', v) } }
 
@@ -67,8 +101,8 @@ export default function Panel({ S, C, send }) {
           {/* ---- top row ---- */}
           <div className="c pwr" style={{ left: '20%', top: '14%' }}
             onClick={() => send(S === 'off' ? 'POWER' : 'POWER_OFF')}>{Ic.power}</div>
-          <div className={'c' + (flash.vol ? ' flash' : '')} style={{ left: '34%', top: '14%' }}
-            onClick={() => doFlash('vol', () => send('VOLUME_TOGGLE'))}>{Ic.volume}<span className="lab">Volume</span></div>
+          <div className={'c' + (volFlash ? ' flash' : '')} style={{ left: '34%', top: '14%' }}
+            onClick={handleVolume}>{Ic.volume}<span className="lab">Volume</span></div>
           <div className="dual-ind" style={{ left: '50%', top: '14%', opacity: C.dual && on ? 1 : 0 }}>
             <img src={dualHeatSvg} alt="" draggable={false} /></div>
           <div className={'c' + (pdis ? ' dis' : '')} style={{ left: '66%', top: '14%' }}
@@ -83,10 +117,10 @@ export default function Panel({ S, C, send }) {
               onClick={() => !pdis && send('SELECT_FUNCTION', fn)}>{label}</div>
           ))}
 
-          {/* ---- shake (left) — lights up during shakeAlert ---- */}
-          <div className={'shake-btn' + (C.shake || S === 'shakeAlert' ? ' sel' : '') + (pdis ? ' dis' : '')}
+          {/* ---- shake (left) ---- */}
+          <div className={'shake-btn' + (C.shake || S === 'shakeAlert' ? ' sel' : '') + (!on ? ' dis' : '')}
             style={{ left: '14%', top: '63%' }}
-            onClick={() => !pdis && send('TOGGLE_SHAKE')}>{Ic.shake}</div>
+            onClick={() => on && send('TOGGLE_SHAKE')}>{Ic.shake}</div>
 
           {/* ---- steppers + display ---- */}
           <div className="stepper" style={{ left: '30%', top: '63%' }}>
@@ -95,8 +129,11 @@ export default function Panel({ S, C, send }) {
             <div className={'arr dn' + (!canAdjust ? ' dis' : '')} onClick={() => adjTemp(-5)}>{Ic.arrow}</div>
           </div>
           <div className="disp-wrap" style={{ left: '49.9%', top: '63%' }}>
-            <span className="ghost">{ghost}</span>
-            <span className={'disp' + (cooking ? ' cooking' : '')}>{dispVal}</span>
+            {ghost && <span className="ghost">{ghost}</span>}
+            <span className={'disp' + (volFlash ? ' vol-label' : '') + (cooking ? ' cooking' : '')}>
+              {dispVal}
+            </span>
+            {showDeg && <span className="deg">°</span>}
           </div>
           <div className="stepper" style={{ left: '68%', top: '63%' }}>
             <div className={'arr' + (!canAdjust ? ' dis' : '')} onClick={() => adjTime(5)}>{Ic.arrow}</div>
@@ -113,11 +150,11 @@ export default function Panel({ S, C, send }) {
           <div className={'c btm' + (!pauseEnabled ? ' dis' : '')} style={{ left: '30%', top: '87%' }}
             onClick={() => { if (pauseEnabled) { if (S === 'paused') setDispMode('time'); send('PAUSE'); } }}>{Ic.pause}</div>
           <div className={'startstop' + (on ? ' on' : '')} style={{ left: '49.9%', top: '87%' }}
-            onClick={() => { setDispMode('time'); send('START'); }}>
+            onClick={() => { clearInterval(altRef.current); setDispMode('time'); send('START'); }}>
             <div className="t">Start</div><div className="ln" /><div className="t">Stop</div>
           </div>
-          <div className={'c btm' + (flash.light ? ' flash' : '')} style={{ left: '68%', top: '87%' }}
-            onClick={() => doFlash('light', () => send('LIGHT_TOGGLE'))}>{Ic.light}</div>
+          <div className={'c btm' + (C.light ? ' lit' : '')} style={{ left: '68%', top: '87%' }}
+            onClick={() => send('LIGHT_TOGGLE')}>{Ic.light}</div>
         </div>
       </div>
       <div className="hint">basket → press <b>B</b> to remove, <b>B</b> again to reinsert &nbsp;·&nbsp; hold <b>fav</b>=save</div>
