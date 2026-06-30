@@ -6,6 +6,10 @@ export const DUAL = new Set([
   'air fry', 'bake', 'roast', 'wings', 'recrisp', 'toast', 'veggies', 'frozen snacks', 'fries', 'max crisp',
 ]);
 
+// Presets that default to shake reminder ON the first time they're selected.
+// Once a user toggles shake for a preset, their choice is remembered (shakeMemory).
+export const SHAKE_DEFAULT = new Set(['air fry', 'fries', 'wings', 'frozen snacks', 'veggies', 'toast']);
+
 export const PRESETS = {
   'air fry': { t: 25, T: 400 }, bake: { t: 45, T: 350 }, roast: { t: 40, T: 380 }, broil: { t: 25, T: 450 },
   wings: { t: 36, T: 400 }, recrisp: { t: 20, T: 375 }, toast: { t: 14, T: 400 },
@@ -18,10 +22,10 @@ export const COOK = ['running', 'paused', 'basketOut', 'shakeAlert', 'shakeWaiti
 
 export const initCtx = {
   fn: null, dual: false, time: 0, temp: 0, rem: 0, total: 0,
-  shake: false, shaken: false, light: false, vol: 2, basket: true, last: null, fav: null,
+  shake: false, shaken: false, light: false, vol: 2, basket: true, last: null, fav: null, shakeMemory: {},
 };
 
-const PERSIST = (C) => ({ light: C.light, vol: C.vol, last: C.last, fav: C.fav, basket: C.basket });
+const PERSIST = (C) => ({ light: C.light, vol: C.vol, last: C.last, fav: C.fav, basket: C.basket, shakeMemory: C.shakeMemory });
 const reset   = (C) => ({ ...initCtx, ...PERSIST(C) });
 
 const clampT = (t) => Math.min(450, Math.max(120, t));
@@ -51,8 +55,10 @@ export function transition(S, C0, ev, arg) {
   }
 
   // ---- helpers ----
-  const setFn  = (fn) => { C.fn = fn; C.dual = DUAL.has(fn); C.time = PRESETS[fn].t; C.temp = PRESETS[fn].T; };
-  const recall = (o)  => { if (o) { C.fn = o.fn; C.time = o.time; C.temp = o.temp; C.dual = o.dual; } };
+  const shakeFor = (fn) => (fn in C.shakeMemory) ? C.shakeMemory[fn] : SHAKE_DEFAULT.has(fn);
+  const setFn  = (fn) => { C.fn = fn; C.dual = DUAL.has(fn); C.time = PRESETS[fn].t; C.temp = PRESETS[fn].T; C.shake = shakeFor(fn); };
+  const recall = (o)  => { if (o) { C.fn = o.fn; C.time = o.time; C.temp = o.temp; C.dual = o.dual; C.shake = shakeFor(o.fn); } };
+  const setShake = (val) => { C.shake = val; if (C.fn) C.shakeMemory = { ...C.shakeMemory, [C.fn]: val }; };
 
   switch (S) {
 
@@ -76,7 +82,7 @@ export function transition(S, C0, ev, arg) {
       if      (ev === 'SELECT_FUNCTION')       setFn(arg);
       else if (ev === 'ADJUST_TIME')           { C.time = Math.max(0, C.time + arg); }
       else if (ev === 'ADJUST_TEMP')           { C.temp = clampT(C.temp + arg); }
-      else if (ev === 'TOGGLE_SHAKE')          C.shake = !C.shake;
+      else if (ev === 'TOGGLE_SHAKE')          setShake(!C.shake);
       else if (ev === 'LAST_COOK' && C.last)   recall(C.last);
       else if (ev === 'FAVORITE' && C.fav)     recall(C.fav);
       else if (ev === 'SAVE_FAVORITE')         { C.fav = { fn: C.fn, time: C.time, temp: C.temp, dual: C.dual }; msg = '★ Favorite saved'; }
@@ -99,7 +105,7 @@ export function transition(S, C0, ev, arg) {
       }
       else if (ev === 'PAUSE')                   S = 'paused';
       else if (ev === 'START' || ev === 'STOP')  { C = reset(C); S = 'idle'; }
-      else if (ev === 'TOGGLE_SHAKE')            C.shake = !C.shake;
+      else if (ev === 'TOGGLE_SHAKE')            setShake(!C.shake);
       else if (ev === 'BASKET_REMOVED')          { C.basket = false; S = 'basketOut'; }
       break;
 
@@ -117,6 +123,7 @@ export function transition(S, C0, ev, arg) {
       else if (ev === 'STOP')                    { C = reset(C); S = 'idle'; }
       else if (ev === 'ADJUST_TIME')             { C.rem = Math.max(0, C.rem + arg); }
       else if (ev === 'ADJUST_TEMP')             { C.temp = clampT(C.temp + arg); }
+      else if (ev === 'TOGGLE_SHAKE')            setShake(!C.shake);
       else if (ev === 'BASKET_REMOVED')          { C.basket = false; S = 'basketOut'; }
       break;
 

@@ -28,7 +28,7 @@ export default function Panel({ S, C, send }) {
   const pauseEnabled = S === 'running' || S === 'paused'
   const brightness = 1
   const presetLit = (fn) => C.fn === fn && on
-  const canAdjust = on && (S === 'set' || S === 'idle' || S === 'paused')
+  const canAdjust = on && (S === 'set' || S === 'idle' || S === 'paused' || S === 'running')
 
   // ---- display mode: time vs temp ----
   const [dispMode, setDispMode] = useState('time')
@@ -65,6 +65,12 @@ export default function Panel({ S, C, send }) {
 
   useEffect(() => () => clearTimeout(volTimer.current), [])
 
+  // ---- mid-cook adjustment confirm flash ----
+  const [adjFlash, setAdjFlash] = useState(false)
+  const adjFlashRef = useRef(null)
+
+  useEffect(() => () => clearTimeout(adjFlashRef.current), [])
+
   // ---- flash for light ----
   const [flash, setFlash] = useState({})
   const doFlash = (key, action) => {
@@ -87,8 +93,24 @@ export default function Panel({ S, C, send }) {
     ghost = dispVal.replace(/[0-9]/g, '8')
   }
 
-  const adjTemp = (v) => { if (canAdjust) { setDispMode('temp'); send('ADJUST_TEMP', v) } }
-  const adjTime = (v) => { if (canAdjust) { setDispMode('time'); send('ADJUST_TIME', v) } }
+  const confirmFlash = (revertMode) => {
+    setAdjFlash(true)
+    clearTimeout(adjFlashRef.current)
+    adjFlashRef.current = setTimeout(() => {
+      setAdjFlash(false)
+      if (revertMode) setDispMode(revertMode)
+    }, 3000)
+  }
+  const adjTemp = (v) => {
+    if (!canAdjust) return
+    setDispMode('temp'); send('ADJUST_TEMP', v)
+    if (cooking) confirmFlash('time')
+  }
+  const adjTime = (v) => {
+    if (!canAdjust) return
+    setDispMode('time'); send('ADJUST_TIME', v)
+    if (cooking) confirmFlash(null)
+  }
 
   return (
     <div className="panelwrap">
@@ -105,14 +127,14 @@ export default function Panel({ S, C, send }) {
             onClick={handleVolume}>{Ic.volume}<span className="lab">Volume</span></div>
           <div className="dual-ind" style={{ left: '50%', top: '14%', opacity: C.dual && on ? 1 : 0 }}>
             <img src={dualHeatSvg} alt="" draggable={false} /></div>
-          <div className={'c' + (pdis ? ' dis' : '')} style={{ left: '66%', top: '14%' }}
+          <div className={'c' + (pdis ? (cooking ? ' gone' : ' dis') : '')} style={{ left: '66%', top: '14%' }}
             {...makeHold(() => send('FAVORITE'), () => send('SAVE_FAVORITE'))}>{Ic.fav}<span className="lab">Favorite</span></div>
-          <div className={'c' + (pdis ? ' dis' : '')} style={{ left: '80%', top: '14%' }}
+          <div className={'c' + (pdis ? (cooking ? ' gone' : ' dis') : '')} style={{ left: '80%', top: '14%' }}
             onClick={() => !pdis && send('LAST_COOK')}>{Ic.last}<span className="lab">Last Cook</span></div>
 
           {/* ---- presets ---- */}
           {PRESETS_POS.map(([fn, label, x, y]) => (
-            <div key={fn} className={'p' + (presetLit(fn) ? ' sel' : '') + (pdis && !presetLit(fn) ? ' dis' : '')}
+            <div key={fn} className={'p' + (presetLit(fn) ? ' sel' : '') + (pdis && !presetLit(fn) ? (cooking ? ' gone' : ' dis') : '')}
               style={{ left: x + '%', top: y + '%' }}
               onClick={() => !pdis && send('SELECT_FUNCTION', fn)}>{label}</div>
           ))}
@@ -130,7 +152,8 @@ export default function Panel({ S, C, send }) {
           </div>
           <div className="disp-wrap" style={{ left: '49.9%', top: '63%' }}>
             {ghost && <span className="ghost">{ghost}</span>}
-            <span className={'disp' + (volFlash ? ' vol-label' : '') + (cooking ? ' cooking' : '')}>
+            <span className={'disp' + (volFlash ? ' vol-label' : '') + (cooking ? ' cooking' : '')
+              + (adjFlash ? ' adjust-flash' : (S === 'paused' ? ' paused-blink' : ''))}>
               {dispVal}
             </span>
             {showDeg && <span className="deg">°</span>}
@@ -142,15 +165,15 @@ export default function Panel({ S, C, send }) {
           </div>
 
           {/* ---- keep warm (right) ---- */}
-          <div className={'p' + (presetLit('keep warm') ? ' sel' : '') + (pdis && !presetLit('keep warm') ? ' dis' : '')}
+          <div className={'p' + (presetLit('keep warm') ? ' sel' : '') + (pdis && !presetLit('keep warm') ? (cooking ? ' gone' : ' dis') : '')}
             style={{ left: '83%', top: '63%' }}
             onClick={() => !pdis && send('SELECT_FUNCTION', 'keep warm')}>Keep Warm</div>
 
           {/* ---- bottom row ---- */}
-          <div className={'c btm' + (!pauseEnabled ? ' dis' : '')} style={{ left: '30%', top: '87%' }}
+          <div className={'c btm' + (!pauseEnabled ? ' dis' : '') + (S === 'paused' ? ' lit' : '')} style={{ left: '30%', top: '87%' }}
             onClick={() => { if (pauseEnabled) { if (S === 'paused') setDispMode('time'); send('PAUSE'); } }}>{Ic.pause}</div>
           <div className={'startstop' + (on ? ' on' : '')} style={{ left: '49.9%', top: '87%' }}
-            onClick={() => { clearInterval(altRef.current); setDispMode('time'); send('START'); }}>
+            onClick={() => { clearInterval(altRef.current); clearTimeout(adjFlashRef.current); setAdjFlash(false); setDispMode('time'); send('START'); }}>
             <div className="t">Start</div><div className="ln" /><div className="t">Stop</div>
           </div>
           <div className={'c btm' + (C.light ? ' lit' : '')} style={{ left: '68%', top: '87%' }}
