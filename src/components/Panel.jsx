@@ -12,13 +12,27 @@ const PRESETS_POS = [
 
 const VOL_LABELS = ['LOW', 'MED', 'HIGH']
 
-const makeHold = (short, long) => {
-  let timer, longFired = false
-  return {
-    onPointerDown: () => { longFired = false; timer = setTimeout(() => { longFired = true; long() }, 650) },
-    onPointerUp: () => { clearTimeout(timer); if (!longFired) short() },
-    onPointerLeave: () => clearTimeout(timer),
-  }
+// Stable across re-renders via refs — a plain closure recreated inline in JSX
+// on every render would lose its `timer`/`longFired` state if React re-renders
+// the component mid-hold (e.g. a cook tick), causing the short action to fire
+// again right after the long action already did.
+function useHold(short, long) {
+  const timerRef = useRef(null)
+  const longFiredRef = useRef(false)
+  const shortRef = useRef(short)
+  const longRef = useRef(long)
+  shortRef.current = short
+  longRef.current = long
+
+  const handlers = useRef({
+    onPointerDown: () => {
+      longFiredRef.current = false
+      timerRef.current = setTimeout(() => { longFiredRef.current = true; longRef.current() }, 650)
+    },
+    onPointerUp: () => { clearTimeout(timerRef.current); if (!longFiredRef.current) shortRef.current() },
+    onPointerLeave: () => clearTimeout(timerRef.current),
+  })
+  return handlers.current
 }
 
 export default function Panel({ S, C, send }) {
@@ -29,6 +43,7 @@ export default function Panel({ S, C, send }) {
   const brightness = 1
   const presetLit = (fn) => C.fn === fn && on
   const canAdjust = on && (S === 'set' || S === 'idle' || S === 'paused' || S === 'running')
+  const favHold = useHold(() => send('FAVORITE'), () => send('SAVE_FAVORITE'))
 
   // ---- display mode: time vs temp ----
   const [dispMode, setDispMode] = useState('time')
@@ -36,15 +51,15 @@ export default function Panel({ S, C, send }) {
   const altRef = useRef(null)
 
   useEffect(() => {
-    if (C.fn && C.fn !== prevFn.current && !cooking) {
-      let count = 0
-      setDispMode('temp')
+    if (cooking) {
+      clearInterval(altRef.current)
+      setDispMode('time')
+    } else if (C.fn && C.fn !== prevFn.current) {
+      setDispMode('time')
       clearInterval(altRef.current)
       altRef.current = setInterval(() => {
-        count++
-        if (count >= 5) { clearInterval(altRef.current); setDispMode('temp'); return }
         setDispMode(m => m === 'temp' ? 'time' : 'temp')
-      }, 1200)
+      }, 2000)
     }
     prevFn.current = C.fn
   }, [C.fn, cooking])
@@ -65,11 +80,10 @@ export default function Panel({ S, C, send }) {
 
   useEffect(() => () => clearTimeout(volTimer.current), [])
 
-  // ---- mid-cook adjustment confirm flash ----
-  const [adjFlash, setAdjFlash] = useState(false)
-  const adjFlashRef = useRef(null)
+  // ---- mid-cook adjustment: revert to time display after a beat ----
+  const adjRevertRef = useRef(null)
 
-  useEffect(() => () => clearTimeout(adjFlashRef.current), [])
+  useEffect(() => () => clearTimeout(adjRevertRef.current), [])
 
   // ---- flash for light ----
   const [flash, setFlash] = useState({})
@@ -93,23 +107,19 @@ export default function Panel({ S, C, send }) {
     ghost = dispVal.replace(/[0-9]/g, '8')
   }
 
-  const confirmFlash = (revertMode) => {
-    setAdjFlash(true)
-    clearTimeout(adjFlashRef.current)
-    adjFlashRef.current = setTimeout(() => {
-      setAdjFlash(false)
-      if (revertMode) setDispMode(revertMode)
-    }, 3000)
+  const revertToTime = () => {
+    clearTimeout(adjRevertRef.current)
+    adjRevertRef.current = setTimeout(() => setDispMode('time'), 3000)
   }
   const adjTemp = (v) => {
     if (!canAdjust) return
     setDispMode('temp'); send('ADJUST_TEMP', v)
-    if (cooking) confirmFlash('time')
+    if (cooking) revertToTime()
   }
   const adjTime = (v) => {
     if (!canAdjust) return
     setDispMode('time'); send('ADJUST_TIME', v)
-    if (cooking) confirmFlash(null)
+    if (cooking) clearTimeout(adjRevertRef.current)
   }
 
   return (
@@ -123,20 +133,22 @@ export default function Panel({ S, C, send }) {
           {/* ---- top row ---- */}
           <div className="c pwr" style={{ left: '20%', top: '14%' }}
             onClick={() => send(S === 'off' ? 'POWER' : 'POWER_OFF')}>{Ic.power}</div>
-          <div className={'c' + (volFlash ? ' flash' : '')} style={{ left: '34%', top: '14%' }}
-            onClick={handleVolume}>{Ic.volume}<span className="lab">Volume</span></div>
+          <div className="c vol" style={{ left: '34%', top: '14%' }}
+            onClick={handleVolume}>{[Ic.volumeLow, Ic.volumeMed, Ic.volumeHigh][C.vol]}<span className="lab">Volume</span></div>
           <div className="dual-ind" style={{ left: '50%', top: '14%', opacity: C.dual && on ? 1 : 0 }}>
             <img src={dualHeatSvg} alt="" draggable={false} /></div>
           <div className={'c' + (pdis ? (cooking ? ' gone' : ' dis') : '')} style={{ left: '66%', top: '14%' }}
-            {...makeHold(() => send('FAVORITE'), () => send('SAVE_FAVORITE'))}>{Ic.fav}<span className="lab">Favorite</span></div>
+            {...favHold}>{Ic.fav}<span className="lab">Favorite</span></div>
           <div className={'c' + (pdis ? (cooking ? ' gone' : ' dis') : '')} style={{ left: '80%', top: '14%' }}
             onClick={() => !pdis && send('LAST_COOK')}>{Ic.last}<span className="lab">Last Cook</span></div>
 
           {/* ---- presets ---- */}
           {PRESETS_POS.map(([fn, label, x, y]) => (
-            <div key={fn} className={'p' + (presetLit(fn) ? ' sel' : '') + (pdis && !presetLit(fn) ? (cooking ? ' gone' : ' dis') : '')}
+            <div key={fn} className={'p' + (fn === 'frozen snacks' ? ' stack' : '') + (presetLit(fn) ? ' sel' : '') + (pdis && !presetLit(fn) ? (cooking ? ' gone' : ' dis') : '')}
               style={{ left: x + '%', top: y + '%' }}
-              onClick={() => !pdis && send('SELECT_FUNCTION', fn)}>{label}</div>
+              onClick={() => !pdis && send('SELECT_FUNCTION', fn)}>
+              {fn === 'frozen snacks' ? <>Frozen<br />Snacks</> : label}
+            </div>
           ))}
 
           {/* ---- shake (left) ---- */}
@@ -153,7 +165,7 @@ export default function Panel({ S, C, send }) {
           <div className="disp-wrap" style={{ left: '49.9%', top: '63%' }}>
             {ghost && <span className="ghost">{ghost}</span>}
             <span className={'disp' + (volFlash ? ' vol-label' : '') + (cooking ? ' cooking' : '')
-              + (adjFlash ? ' adjust-flash' : (S === 'paused' ? ' paused-blink' : ''))}>
+              + (S === 'paused' ? ' paused-blink' : '')}>
               {dispVal}
             </span>
             {showDeg && <span className="deg">°</span>}
@@ -173,7 +185,7 @@ export default function Panel({ S, C, send }) {
           <div className={'c btm' + (!pauseEnabled ? ' dis' : '') + (S === 'paused' ? ' lit' : '')} style={{ left: '30%', top: '87%' }}
             onClick={() => { if (pauseEnabled) { if (S === 'paused') setDispMode('time'); send('PAUSE'); } }}>{Ic.pause}</div>
           <div className={'startstop' + (on ? ' on' : '')} style={{ left: '49.9%', top: '87%' }}
-            onClick={() => { clearInterval(altRef.current); clearTimeout(adjFlashRef.current); setAdjFlash(false); setDispMode('time'); send('START'); }}>
+            onClick={() => { clearInterval(altRef.current); clearTimeout(adjRevertRef.current); setDispMode('time'); send('START'); }}>
             <div className="t">Start</div><div className="ln" /><div className="t">Stop</div>
           </div>
           <div className={'c btm' + (C.light ? ' lit' : '')} style={{ left: '68%', top: '87%' }}

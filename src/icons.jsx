@@ -5,10 +5,27 @@ export const Ic = {
       <path d="M15.385 1V11.27" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
     </svg>
   ),
-  volume: (
-    <svg viewBox="0 0 20 17" fill="none">
-      <path d="M17.34 4.5C17.34 4.5 18.8 5.96 18.8 8.38C18.8 10.8 17.34 12.26 17.34 12.26" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M0.5 10.2V6.6C0.5 6.09 0.7 5.59 1.07 5.23C1.43 4.87 1.93 4.66 2.44 4.66H5.25C5.44 4.66 5.62 4.6 5.78 4.5L11.6 0.66C11.75 0.56 11.92 0.51 12.09 0.5C12.27 0.5 12.44 0.53 12.59 0.62C12.74 0.7 12.87 0.83 12.96 0.98C13.05 1.13 13.1 1.3 13.1 1.48V15.34C13.1 15.52 13.05 15.69 12.96 15.84C12.87 15.99 12.74 16.11 12.59 16.2C12.44 16.28 12.26 16.32 12.09 16.32C11.91 16.32 11.75 16.26 11.6 16.16L5.78 12.32C5.62 12.22 5.44 12.16 5.25 12.16H2.44C1.93 12.16 1.43 11.96 1.07 11.59C0.71 11.23 0.5 10.73 0.5 10.22V10.2Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+  // Volume icons: hardcoded white strokes — these are persistent state indicators,
+  // not reactive to currentColor. Rings always lit to show the current level.
+  volumeLow: (
+    <svg viewBox="0 0 31 17" fill="none">
+      <path d="M19.9451 4.81C19.9451 4.81 21.2851 6.15 21.2851 8.4C21.2851 10.65 19.9451 11.99 19.9451 11.99" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M2.635 10.2V6.6C2.635 6.09 2.835 5.59 3.205 5.23C3.565 4.87 4.065 4.66 4.575 4.66H7.385C7.575 4.66 7.755 4.6 7.915 4.5L13.735 0.66C13.885 0.56 14.055 0.51 14.225 0.5C14.405 0.5 14.575 0.53 14.725 0.62C14.875 0.7 15.005 0.83 15.095 0.98C15.185 1.13 15.235 1.3 15.235 1.48V15.34C15.235 15.52 15.185 15.69 15.095 15.84C15.005 15.99 14.875 16.11 14.725 16.2C14.575 16.28 14.395 16.32 14.225 16.32C14.045 16.32 13.885 16.26 13.735 16.16L7.915 12.32C7.755 12.22 7.575 12.16 7.385 12.16H4.575C4.065 12.16 3.565 11.96 3.205 11.59C2.845 11.23 2.635 10.73 2.635 10.22V10.2Z" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  volumeMed: (
+    <svg viewBox="0 0 31 17" fill="none">
+      <path d="M19.9451 4.81C19.9451 4.81 21.2851 6.15 21.2851 8.4C21.2851 10.65 19.9451 11.99 19.9451 11.99" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M23.2551 2.77C23.2551 2.77 24.5951 4.88 24.5951 8.4C24.5951 11.92 23.2551 14.03 23.2551 14.03" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M2.635 10.2V6.6C2.635 6.09 2.835 5.59 3.205 5.23C3.565 4.87 4.065 4.66 4.575 4.66H7.385C7.575 4.66 7.755 4.6 7.915 4.5L13.735 0.66C13.885 0.56 14.055 0.51 14.225 0.5C14.405 0.5 14.575 0.53 14.725 0.62C14.875 0.7 15.005 0.83 15.095 0.98C15.185 1.13 15.235 1.3 15.235 1.48V15.34C15.235 15.52 15.185 15.69 15.095 15.84C15.005 15.99 14.875 16.11 14.725 16.2C14.575 16.28 14.395 16.32 14.225 16.32C14.045 16.32 13.885 16.26 13.735 16.16L7.915 12.32C7.755 12.22 7.575 12.16 7.385 12.16H4.575C4.065 12.16 3.565 11.96 3.205 11.59C2.845 11.23 2.635 10.73 2.635 10.22V10.2Z" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  volumeHigh: (
+    <svg viewBox="0 0 31 17" fill="none">
+      <path d="M19.9451 4.81C19.9451 4.81 21.2851 6.15 21.2851 8.4C21.2851 10.65 19.9451 11.99 19.9451 11.99" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M23.2551 2.77C23.2551 2.77 24.5951 4.88 24.5951 8.4C24.5951 11.92 23.2551 14.03 23.2551 14.03" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M26.345 0.99C26.345 0.99 28.115 3.77 28.115 8.4C28.115 13.03 26.345 15.81 26.345 15.81" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M2.635 10.2V6.6C2.635 6.09 2.835 5.59 3.205 5.23C3.565 4.87 4.065 4.66 4.575 4.66H7.385C7.575 4.66 7.755 4.6 7.915 4.5L13.735 0.66C13.885 0.56 14.055 0.51 14.225 0.5C14.405 0.5 14.575 0.53 14.725 0.62C14.875 0.7 15.005 0.83 15.095 0.98C15.185 1.13 15.235 1.3 15.235 1.48V15.34C15.235 15.52 15.185 15.69 15.095 15.84C15.005 15.99 14.875 16.11 14.725 16.2C14.575 16.28 14.395 16.32 14.225 16.32C14.045 16.32 13.885 16.26 13.735 16.16L7.915 12.32C7.755 12.22 7.575 12.16 7.385 12.16H4.575C4.065 12.16 3.565 11.96 3.205 11.59C2.845 11.23 2.635 10.73 2.635 10.22V10.2Z" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   ),
   last: (
@@ -23,18 +40,17 @@ export const Ic = {
     </svg>
   ),
   pause: (
-    <svg viewBox="0 0 28 28" fill="none">
-      <path d="M10.58 7.99V19.15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M16.56 7.99V19.15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M13.57 26.39C20.65 26.39 26.39 20.65 26.39 13.57C26.39 6.49 20.65 0.75 13.57 0.75C6.49 0.75 0.75 6.49 0.75 13.57C0.75 20.65 6.49 26.39 13.57 26.39Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <svg viewBox="0 0 27 27" fill="none">
+      <path d="M10.08 7.49V18.65" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M16.06 7.49V18.65" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M13.07 25.89C20.15 25.89 25.89 20.15 25.89 13.07C25.89 5.99 20.15 0.25 13.07 0.25C5.99 0.25 0.25 5.99 0.25 13.07C0.25 20.15 5.99 25.89 13.07 25.89Z" stroke="currentColor" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   ),
   light: (
-    <svg viewBox="0 0 28 28" fill="none">
-      <path d="M13.57 26.39C20.65 26.39 26.39 20.65 26.39 13.57C26.39 6.49 20.65 0.75 13.57 0.75C6.49 0.75 0.75 6.49 0.75 13.57C0.75 20.65 6.49 26.39 13.57 26.39Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M19.12 9.282C19.12 6.343 16.515 3.986 13.408 4.233C11.316 4.4 9.593 5.801 8.875 7.694C7.829 10.436 10.044 11.728 11.172 13.641C11.377 13.996 11.326 14.903 11.264 15.554C11.223 15.929 11.531 16.254 11.931 16.254H15.869C16.228 16.254 16.505 15.958 16.464 15.623C16.392 14.972 16.331 14.006 16.546 13.651C17.438 12.152 19.131 11.146 19.131 9.292L19.12 9.282Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M16.649 19.272H11.069" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M15.592 22.122H12.136" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <svg viewBox="0 0 27 27" fill="none">
+      <path d="M13.07 25.995C20.15 25.995 25.89 20.255 25.89 13.175C25.89 6.095 20.15 0.355 13.07 0.355C5.99 0.355 0.25 6.095 0.25 13.175C0.25 20.255 5.99 25.995 13.07 25.995Z" stroke="currentColor" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M15.086 19.18H11.336C11.066 19.18 10.846 19.4 10.846 19.67V20.43C10.846 21.46 11.676 22.29 12.706 22.29H13.676C14.706 22.29 15.536 21.46 15.536 20.43V19.63C15.536 19.38 15.336 19.18 15.086 19.18Z" stroke="currentColor" strokeWidth="0.8" strokeLinejoin="round"/>
+      <path d="M13.496 5.32C15.276 5.32 16.916 6.32 17.666 7.86C18.706 9.98 18.436 12.21 16.936 13.86C16.386 14.5 15.116 16.1 14.686 17.65H11.706C11.286 16.1 10.016 14.51 9.436 13.84C7.956 12.22 7.686 9.98 8.726 7.87C9.476 6.33 11.116 5.33 12.896 5.33C13.096 5.33 13.296 5.33 13.496 5.32Z" stroke="currentColor" strokeWidth="0.8" strokeLinejoin="round"/>
     </svg>
   ),
   arrow: (

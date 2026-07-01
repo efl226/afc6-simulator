@@ -105,6 +105,8 @@ export function transition(S, C0, ev, arg) {
       }
       else if (ev === 'PAUSE')                   S = 'paused';
       else if (ev === 'START' || ev === 'STOP')  { C = reset(C); S = 'idle'; }
+      else if (ev === 'ADJUST_TIME')             { C.rem = Math.max(0, C.rem + arg); }
+      else if (ev === 'ADJUST_TEMP')             { C.temp = clampT(C.temp + arg); }
       else if (ev === 'TOGGLE_SHAKE')            setShake(!C.shake);
       else if (ev === 'BASKET_REMOVED')          { C.basket = false; S = 'basketOut'; }
       break;

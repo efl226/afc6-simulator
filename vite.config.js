@@ -10,6 +10,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         panel: resolve(__dirname, 'panel.html'),
+        spec: resolve(__dirname, 'spec.html'),
       },
     },
   },

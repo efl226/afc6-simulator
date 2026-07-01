@@ -1,0 +1,152 @@
+/* ================================================
+   SPEC PAGE — Engineering reference document
+   Straightforward, image-heavy, minimal prose.
+   ================================================ */
+
+.spec-page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 40px 28px 80px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--ink);
+}
+
+/* ---- Header ---- */
+.spec-header { margin-bottom: 48px; border-bottom: 2px solid var(--ink); padding-bottom: 20px; }
+.spec-header h1 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -.5px;
+  margin: 0 0 8px;
+}
+.spec-sub { font-size: 13px; color: var(--mut); margin: 0 0 18px; }
+.spec-legend { display: flex; gap: 24px; flex-wrap: wrap; font-size: 11.5px; color: #555; }
+.spec-legend span { display: flex; align-items: center; gap: 7px; }
+.leg-dot {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; border-radius: 50%; font-style: normal;
+  font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.leg-touch { background: var(--org); }
+.leg-auto { background: #8d8779; }
+.leg-sensor { background: #5a99b5; }
+
+/* ---- Section ---- */
+.spec-section { margin-bottom: 56px; }
+.spec-section-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; }
+.spec-section-n {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 22px; font-weight: 800; color: var(--org);
+  min-width: 32px;
+}
+.spec-section-head h2 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 19px; font-weight: 700; letter-spacing: .3px;
+  margin: 0; text-transform: uppercase;
+}
+.spec-section-note { font-size: 12.5px; color: var(--mut); margin: 4px 0 20px 44px; max-width: 760px; line-height: 1.5; }
+.spec-grid { display: flex; flex-direction: column; gap: 24px; }
+
+/* ---- Card ---- */
+.spec-card {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 24px;
+  background: var(--card);
+  border: 1px solid var(--cardline);
+  border-radius: 14px;
+  padding: 18px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .spec-card { grid-template-columns: 1fr; }
+}
+
+.spec-shot {
+  position: relative;
+  background: #000;
+  border-radius: 10px;
+  overflow: hidden;
+  line-height: 0;
+}
+.spec-shot img { width: 100%; display: block; }
+
+/* ---- Touch markers ---- */
+.spec-touch {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  pointer-events: none;
+}
+.spec-touch-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--org);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px var(--org), 0 4px 10px rgba(0,0,0,.4);
+}
+.spec-touch-label {
+  background: var(--org); color: #fff;
+  font-size: 9.5px; font-weight: 700; letter-spacing: .3px;
+  padding: 3px 7px; border-radius: 5px; white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0,0,0,.3);
+}
+
+/* ---- Card info ---- */
+.spec-info { min-width: 0; }
+.spec-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+.spec-title-row h3 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 19px; font-weight: 800; margin: 0;
+}
+.spec-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: .5px;
+  padding: 3px 9px; border-radius: 20px;
+}
+.spec-badge.err { background: #f9dede; color: #a23a3a; }
+.spec-badge.ok { background: #dcefe2; color: #2d7a52; }
+.spec-badge.warn { background: #fcecc8; color: #93661a; }
+
+.spec-status {
+  font-size: 11.5px; color: var(--mut); margin-bottom: 10px;
+  background: #fff; border: 1px solid var(--cardline); border-radius: 6px;
+  padding: 5px 10px; display: inline-block;
+}
+.spec-status b { color: var(--ink); }
+
+.spec-desc { font-size: 13px; line-height: 1.6; color: #333; margin: 0 0 14px; }
+
+.spec-out { display: flex; flex-direction: column; gap: 5px; }
+.spec-out-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; padding: 6px 10px; border-radius: 7px;
+  background: #fff; border: 1px solid var(--cardline);
+}
+.spec-out-row.out-auto { border-style: dashed; }
+.oo-icon {
+  width: 18px; height: 18px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; color: #fff; flex-shrink: 0;
+}
+.spec-out-row.out-touch .oo-icon { background: var(--org); }
+.spec-out-row.out-auto .oo-icon { background: #8d8779; }
+.spec-out-row.out-sensor .oo-icon { background: #5a99b5; }
+.oo-event { font-weight: 700; color: #444; white-space: nowrap; }
+.oo-arrow { color: #bbb; }
+.oo-dest { color: var(--ink); }
+
+/* ---- Tables (timeouts / global controls) ---- */
+.spec-table {
+  width: 100%; max-width: 760px; margin-left: 44px;
+  border-collapse: collapse; font-size: 12.5px;
+  background: var(--card); border: 1px solid var(--cardline); border-radius: 10px; overflow: hidden;
+}
+.spec-table th, .spec-table td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--cardline); }
+.spec-table th { background: #fff; font-size: 10.5px; letter-spacing: .5px; color: var(--mut); text-transform: uppercase; }
+.spec-table tr:last-child td { border-bottom: none; }
+.spec-table td:last-child { font-weight: 700; }
+
+.spec-footer {
+  margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--cardline);
+  font-size: 11px; color: var(--faint); text-align: center;
+}

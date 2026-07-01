@@ -81,6 +81,8 @@ main { position: relative; z-index: 2; display: flex; gap: 32px; padding: 14px 3
 .c .lab { font-size: 13px; letter-spacing: .2px; white-space: nowrap; font-weight: 400; }
 .c.pwr { color: #fff; }
 .c.pwr svg { width: 44px; height: auto; }
+.c.vol { color: #fff; }
+.c.vol svg { width: 44px; height: auto; }
 .c.btm svg { width: 42px; height: 42px; }
 .c.flash { color: #fff; }
 .c.dis { opacity: .32; pointer-events: none; }
@@ -91,6 +93,7 @@ main { position: relative; z-index: 2; display: flex; gap: 32px; padding: 14px 3
 .p.sel { color: #fff; }
 .p.dis { opacity: .32; pointer-events: none; }
 .p.gone { opacity: 0; pointer-events: none; }
+.p.stack { white-space: normal; text-align: center; line-height: 1.2; width: max-content; }
 .disp-wrap { position: absolute; transform: translate(-50%, -50%); text-align: center; }
 .disp, .ghost { font-family: 'DSEG7', 'JetBrains Mono', monospace; font-weight: 700; font-size: 50px; letter-spacing: 2px; line-height: 1; }
 .ghost { position: absolute; inset: 0; color: #fff; opacity: .07; }
@@ -98,9 +101,7 @@ main { position: relative; z-index: 2; display: flex; gap: 32px; padding: 14px 3
 .disp.cooking { color: #fff; filter: drop-shadow(0 0 12px rgba(240, 137, 46, .30)); }
 .disp.vol-label { font-family: 'NHGDP', sans-serif; font-size: 36px; letter-spacing: 4px; transition: none; }
 .disp.paused-blink { animation: pausedBlink 1s step-end infinite; }
-.disp.adjust-flash { animation: adjustBlink .4s step-end infinite; }
 @keyframes pausedBlink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
-@keyframes adjustBlink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
 .deg { font-family: 'NHGDP', sans-serif; font-size: 24px; color: #fff; vertical-align: top; margin-left: 1px; filter: drop-shadow(0 0 6px rgba(255,255,255,.15)); }
 .c.btm.lit { color: #fff; }
 .stepper { display: flex; flex-direction: column; align-items: center; gap: 22px; color: #fff; }
